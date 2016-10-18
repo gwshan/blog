@@ -1,0 +1,1 @@
+content/uboot_boot_on_palmetto.txt

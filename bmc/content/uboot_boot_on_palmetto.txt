@@ -1,0 +1,211 @@
+
+                 =========================================
+                 uBoot boots on IBM's palmetto (BMC) board
+                 =========================================
+
+This post depicts the function calls when uboot boots on IBM's openPower palmetto
+(BMC) platform. The SoC deployed on the BMC is Aspeed 2400. I believe there are
+too much details missed from this post. However, it still can serve as overview
+and be helpful for further exploiting. It would be good start if you want benefit
+from my posts about uboot on BMC.
+
+arch/arm/cpu/arm926ejs/start.S::reset
+   CPU switches to SVC32 mode;
+arch/arm/cpu/arm926ejs/start.S::cpu_init_crit
+   Flush dCache; Invalidate TLBs; Flush iCache;
+   Disable MMU and dCache; Enable iCache;
+arch/arm/mach-aspeed/platform_g4.S::lowlevel_init
+arch/arm/lib/crt0.S::_main
+   Setup initial stack pointer to (0x40000000 + 0x2000000 - sizeof(struct global_data));
+   common/init/board_init.c::board_init_f_alloc_reserve
+   common/init/board_init.c::board_init_f_init_reserve
+   common/board_f.c::board_init_f
+      common/board_f.c::setup_mon_len
+         Update @gd->mon_len to (__bss_end - _start);
+      common/dlmalloc.c::initf_malloc
+      common/board_f.c::initf_console_record
+      common/board_f.c::arch_cpu_init
+      common/board_f.c::mach_cpu_init
+      common/board_f.c::initf_dm
+      common/board_f.c::arch_cpu_init_dm
+      common/board_f.c::mark_bootstage
+      arch/arm/mach-aspeed/timer.c::timer_init
+         Start TMC#0 whose timeout is set to maximal value (0xFFFFFFFF)
+      common/env_flash.c::env_init
+         Update @gd->env_addr to 0x20060000 (environmental variables in flash)
+         Update @gd->env_valid to 1
+      common/board_f.c::init_baud_rate
+         Update @gd->baudrate to 115200 (CONFIG_BAUDRATE). The environmental
+         variables are unavailable that time
+      drivers/serial/serial.c::serial_init
+         Add GD_FLAG_SERIAL_READY
+         Initialize UART#0 (base register: 0x1E784000)
+      common/console.c::console_init_f
+         Update gd->have_console to 1. The console is ready!
+      common/display_options.c::display_options
+         Print u-boot version information
+      common/board_f.c::display_text_info
+         Print text/BSS base addresses (debug enabled only)
+      arch/arm/mach-aspeed/cpuinfo.c::print_cpuinfo
+         Print SoC information
+      common/board_info.c::show_board_info
+      common/board_f.c::announce_dram_init
+         Print "DRAM:    "
+      board/aspeed/ast-g4/ast-g4.c::dram_init
+         Update gd->ram_size to (512MB - 16MB)
+      common/board_f.c::setup_dest_addr
+         gd->ram_size = 0x1f000000
+         gd->ram_top = 0x5f000000
+         gd->relocaddr = 0x5f000000
+      common/board_f.c::reserve_round_4k
+      common/board_f.c::reserve_mmu
+         gd->arch.tlb_size = 0x4000
+         gd->arch.tlb_addr = 0x5eff0000
+         gd->relocaddr = 0x5eff0000 (64KB aligned)
+      common/board_f.c::reserve_trace
+      common/board_f.c::reserve_uboot
+         Reserve memory for gd->mon_len
+         gd->relocaddr = 0x5efba000 (4KB aligned)
+         gd->start_addr_sp = 0x5efba000
+      common/board_f.c::reserve_malloc
+         Reserve memory for mamloc (0x00421000)
+         gd->start_addr_sp = 0x5eb99000
+      common/board_f.c::reserve_board
+         Reserve memory for bd_t (0x58)
+         gd->bd = 0x5eb98fa8
+         gd->start_addr_sp = 0x5eb98fa8
+      common/board_f.c::setup_machine
+      common/board_f.c::reserve_global_data
+         Reserve memory for gd_t (0xa8)
+         gd->new_gd = 0x5eb98f00
+         gd->start_addr_sp = 0x5eb98f00
+      common/board_f.c::reserve_fdt
+         Reserve memory for gd->fdt_blob (None)
+      common/board_f.c::reserve_arch
+      common/board_f.c::reserve_stacks
+         Reserve memory for IRQ stack (None)
+         gd->irq_sp = 0x5eb98ef0
+         gd->start_addr_sp = 0x5eb98ee0
+      common/board_f.c::setup_dram_config
+         Update gd->bd->bi_dram[0].start to 0x40000000
+         Update gd->bd->bi_dram[0].size to gd->ram_size
+      common/board_f.c::show_dram_config
+         Print DRAM configuration information
+      common/board_f.c::display_new_sp
+         Print gd->start_addr_sp (debug only)
+      common/board_f.c::reloc_fdt
+         Relocate FDT blob (none)
+         Copy FDT blob from (gd->fdt_blob, gd->fdt_size) to (gd->new_fdt, gd->fdt_size)
+         Update gd->fdt_blob to gd->new_fdt
+      common/board_f.c::setup_reloc
+         Update gd->reloc_off to (gd->relocaddr - CONFIG_SYS_TEXT_BASE)
+         Copy gd_t to gd->new_gd
+
+Update gd_t pointer with gd->new_gd
+arch/arm/lib/relocate.S::relocate_code
+   Copy content from (__image_copy_start, __image_copy_end) to gd->relocaddr
+   Fix .rel.dyn section (__rel_dyn_start, __rel_dyn_end)
+arch/arm/lib/relocate.S::relocate_vectors
+   Relocate exception vectors (target is 0x0 or 0xffff0000) according to the
+   CP15's configuration.
+arch/arm/cpu/arm926ejs/start.S::c_runtime_cpu_setup
+Clear bss section (__bss_start, __bss_end)
+common/board_f.c::coloured_LED_init
+common/board_f.c::red_led_on
+
+common/board_r.c::board_init_r
+   common/board_r.c::initr_trace
+   common/board_r.c::initr_reloc
+      Add flag (GD_FLG_RELOC | GD_FLG_FULL_MALLOC_INIT)
+   common/board_r.c::initr_caches
+      arch/arm/lib/cache.c::enable_caches
+   common/board_r.c::initr_reloc_global_data
+      monitor_flash_len = _end - __image_copy_start
+   common/board_r.c::initr_barrier
+   common/board_r.c::initr_malloc
+      common/dlmalloc.c::mem_malloc_init
+         Initialize malloc memory blocks starting from (gd->relocaddr - TOTAL_MALLOC_LEN)
+   common/board_r.c::initr_console_record
+   common/bootstage.c::bootstage_relocate
+   common/board_r.c::initr_bootstage
+   board/aspeed/ast_g4/ast_g4.c::board_init
+      gd->bd->bi_boot_params = 0x40000100
+      gd->flags = 0
+   common/stdio.c::stdio_init_tables
+   common/board_r.c::initr_serial
+      Register serial port and set default one
+   common/board_r.c::initr_announce
+   common/board_r.c::power_init_board
+   common/board_r.c::initr_flash
+      arch/arm/mach-aspeed/flash.c::flash_init
+         Figure out flash_info[]
+         Protect sectors for uboot's text section (None)
+         Protect sectors for environmental variables
+      Update bd->bi_flashsize to flash size
+      Update bd->bi_flashoffset to flash address of uboot's text section (None)
+   common/board_r.c::initr_env
+      common/env_common.c::env_relocate
+      common/env_flash.c::env_relocate_spec
+      common/env_common.c::env_import
+         Check CRC and decrypt it if necessary
+         Import environment variables to hash table
+         load_addr = "load_addr"
+   common/board_r.c::initr_secondary_cpu
+   common/stdio.c::stdio_add_devices
+      common/stdio.c::drv_system_init
+         Register stdio device for serial
+      drivers/serial/serial.c::serial_stdio_init
+         Register stdio devices for serial ports (only one)
+   common/board_r.c::initr_jumptable
+      common/exports.c::jumptable_init
+         Populate jumptable (gd->jt)
+   common/console.c::console_init_r
+      Bind stdin/stdout/stderr with stdio devices
+   board/aspeed/ast-g4/ast-g4.c::misc_init_r
+   arch/arm/lib/interrupts.c::interrupt_init
+   common/board_r.c::initr_enable_interrupts
+   common/board_r.c::initr_ethaddr
+      bd->bi_enetaddr = "ethaddr"
+   common/board_r.c::initr_net
+      net/eth_legacy.c::eth_initialize
+         Initialize ethernet device list
+         eth_current = NULL
+         net/eth_common.c::eth_common_init
+            common/miiphyutil.c::miiphy_init
+               Initilaize MII device list
+               current_mii = NULL
+            drivers/net/phy/phy.c::phy_init
+               Register PHY drivers (None)
+         drivers/net/ftgmac100.c::ftgmac100_initialize
+            arch/arm/mach-aspeed/ast-scu.c::ast_scu_multi_func_eth
+               Configure PIN multiplexing through SCU register (0x70, 0x8x)
+            arch/arm/mach-aspeed/ast-scu.c::ast_scu_init_eth
+               Reset MAC and enable its clock through SCU register (0x4, 0x8)
+            Allocate memory for ethernet device and its private data
+            net/eth_legacy.c::eth_register
+               Register ethernet device. For the first one that is registered,
+               Couple of variables are updated. Otherwise, the device is put
+               into the list (eth_devices)
+                  eth_devices = dev
+                  eth_current = dev
+                  Update "ethact" to the ethernet device name
+            drivers/net/ftgmac100.c::ftgmac100_set_mac_from_env
+               Get MAC address from "ethaddr" or "eth1addr"
+               Write MAC address through MAC register (0x8, 0xc)
+            drivers/net/ftgmac100.c::ftgmac100_reset
+               Reset MAC through MAC register (0x50)
+   common/board_r.c::run_main_loop
+
+common/main.c::main_loop
+   common/cli.c::cli_iniit
+   common/main.c::run_preboot_environment_command
+      Run commands included in "preboot" (Disabled)
+   common/autoboot.c::bootdelay_process
+      Get boot delay from "bootdelay" or CONFIG_BOOTDELAY (2 seconds)
+      Get boot retry timeout from "bootretry" or CONFIG_BOOT_RETRY_TIME
+      Get boot command from "bootcmd"
+   common/autoboot.c::autoboot_command
+      Automatically run boot command from "bootcmd" until it is stopped
+   common/cli.c::cli_loop
+   common/cli_simple.c::cli_simple_loop
+      Accept command and execute it
