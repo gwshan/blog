@@ -9,6 +9,20 @@ too much details missed from this post. However, it still can serve as overview
 and be helpful for further exploiting. It would be good start if you want benefit
 from my posts about uboot on BMC.
 
+There are 3 primary stages: (A) Early initialization stage; (B) Relocation; (C)
+Post initialization stage. The primary goal of (A) are:
+
+ - Restore CPU to initial state - enabled system mode (SVC32), disabled MMU,
+   flushed dCache and invalidated TLBs.
+ - Initialize SDRAM controller so that C code, which depends on stack in SDRAM,
+   to be executed. Once SDRAM works, one block of memory is reserved to store
+   the global data (gd_t) temporarily.
+ - It's not bad idea to initialize the console. It's very helpful for debugging
+   during this early initialization stage.
+ - one of the most important goals is to split the memory, preparing for next
+   stage ((B) Relocation). After this, the memory regions are tracked by fields
+   in gd_t. A chart about this will be given.
+
 arch/arm/cpu/arm926ejs/start.S::reset
    CPU switches to SVC32 mode;
 arch/arm/cpu/arm926ejs/start.S::cpu_init_crit
@@ -100,8 +114,35 @@ arch/arm/lib/crt0.S::_main
       common/board_f.c::setup_reloc
          Update gd->reloc_off to (gd->relocaddr - CONFIG_SYS_TEXT_BASE)
          Copy gd_t to gd->new_gd
+      Update gd_t pointer with gd->new_gd
 
-Update gd_t pointer with gd->new_gd
+After above stage is completed, the memory is splited into various regions
+as below chart shows:
+
+   0x60000000 +----------------+
+              |      VGA       |
+   0x5f000000 +----------------+
+              |   Page Table   |  gd->tlb_addr, gd->tlb_size
+              +----------------+
+              |  uBoot Image   |  gd->relocaddr, gd->mon_len (__bss_end - _start)
+              +----------------+
+              |     malloc     |  TOTAL_MALLOC_LEN
+              +----------------+
+              |      bd_t      |  gd->bd
+              +----------------+
+              |      gd_t      |  gd->new_gd
+              +----------------+
+              |    fdt blob    |  gd->fdt_blob
+              +-------+--------+  gd->start_addr_sp
+                      |
+                      |
+                      |
+                      |           stack grows downwords
+                      |
+              +-------+--------+
+              |     gd_t       |  temporary gd_t used in early initialization stage 
+   0x40000000 +----------------+
+
 arch/arm/lib/relocate.S::relocate_code
    Copy content from (__image_copy_start, __image_copy_end) to gd->relocaddr
    Fix .rel.dyn section (__rel_dyn_start, __rel_dyn_end)
