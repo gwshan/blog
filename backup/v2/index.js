@@ -1,6 +1,12 @@
 var MenuStrings = new Array(
-    "openBMC->uboot->Palmetto bootup->openbmc/uboot/palmetto_bootup.txt",
-    "openBMC->uboot->Command [ping]->openbmc/uboot/command_ping.txt"
+    "Kernel->Generic->spinlock->kernel/generic/spinlock.txt",
+    "Kernel->Generic->rwlock->kernel/generic/rwlock.txt",
+    "Kernel->PCI->config space->kernel/pci/pci_config_space.txt",
+    "Kernel->PCI->memory space->kernel/pci/pci_memory_space.txt",
+    "openBMC->uboot->Palmetto bootup->openbmc/uboot/uboot_boot_on_palm.txt",
+    "openBMC->uboot->command ping->openbmc/uboot/uboot_command_ping.txt",
+    "openBMC->Application->skb->kernel/networking/skb.txt",
+    "openBMC->Application->netdevice->kernel/generic/netdevice.txt"
 );
 var RootButton;
 var Iframe;

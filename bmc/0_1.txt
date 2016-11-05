@@ -1,1 +1,0 @@
-content/uboot_command_ping.txt
