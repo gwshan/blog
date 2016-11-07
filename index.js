@@ -1,6 +1,7 @@
 var MenuStrings = new Array(
     "openBMC->uboot->Palmetto bootup->openbmc/uboot/palmetto_bootup.txt",
-    "openBMC->uboot->Command [ping]->openbmc/uboot/command_ping.txt"
+    "openBMC->uboot->Command [ping]->openbmc/uboot/command_ping.txt",
+    "About->Myself->about/myself.html"
 );
 var RootButton;
 var Iframe;
@@ -58,13 +59,10 @@ var IframeEx = {
                 return;
 
             type = fname.substr(pos + 1, fname.length - pos - 1);
-            if (type == "txt") {
+            if (type == "txt" || type == "html")
                 iframe.src = fname;
-            } else if (type == "html") {
-                alert("IframeEx.load(): html file not supported yet");
-            } else {
+            else
                 alert("IframeEx.load(): File type '" + type + "' not supported");
-            }
         }
 
         IframeEx.show = function(visible) {
@@ -230,7 +228,7 @@ var ButtonEx = {
                     } else {
                         b = list[i - 1].getButton();
                         x = Number(b.style.left.substr(0, b.style.left.length - 2));
-                        x += (b.value.length * 8 + 25);
+                        x += (b.value.length * 12 + 25);
                         y = Number(b.style.top.substr(0, b.style.top.length - 2));
                     }
 
@@ -261,7 +259,7 @@ var ButtonEx = {
                         b = p.getButton();
 
                         x = Number(b.style.left.substr(0, b.style.left.length - 2));
-                        x += (p.getChildLeftMargin() * 8);
+                        x += (p.getChildLeftMargin() * 12);
                         x += 25;
                         y = Number(b.style.top.substr(0, b.style.top.length - 2));
                     } else {
