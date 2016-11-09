@@ -1,0 +1,134 @@
+
+                           =============================
+                           bss, data and rodata sections
+                           =============================
+
+On ARM5 based ARM926ejs, there is no global table helping to locate the global
+variables. Instead, the so-called critical area is allocated after instructions
+in every function that accesses the global variable. The location of the global
+variables are stored in the critical area. I don't acknolodge the motivation, but
+lots of memory is wasted because of this: the (multiple) functions that dereferences
+the same global variable have same global variable's location stored in their
+critical area separately. All of them are duplicated.
+
+Lets take a look with help of an example. First of all, I have one simple function
+dereferencing 3 global variables and output their values to system console. The
+C code looks as below:
+
+extern int uboot_global_var0;
+extern int uboot_global_var1;
+extern const int uboot_global_var2;
+
+static int initf_end(void)
+{
+	printf("%s: uboot_global_var{0,1,2}=%d, %d, %d\n",
+	       __func__, uboot_global_var0, uboot_global_var1, uboot_global_var2);
+
+	uboot_global_var0 = 16;
+	uboot_global_var1 = 17;
+	return 0;
+}
+
+static int initr_begin(void)
+{
+	printf("%s: uboot_global_var{0,1,2}=%d, %d, %d\n",
+	       __func__, uboot_global_var0,
+	       uboot_global_var1,
+	       uboot_global_var2);
+	return 0;
+}
+
+According to the assembly code of initr_begin() as below, GPR{0,1,2,3} are
+used to pass arguments to printf(). The last (5th) argument is pushed to
+stack in advance so that callee can fetch it. So there are 4 GPRs used for
+passing arguments in maximal degree and additional arguments have to be
+passed to callee through stack.
+
+There are entries (called critical area) following the instructions of
+initr_begin(). The addresses of the derreferenced global variables are
+stored in the critical area. Intrestingly, @uboot_global_var0 is put to
+.bss section even it has been initialized to 0. @uboot_global_var1 is
+stored in .data section. I guess it's caused by GCC's smartness.
+
+(gdb) disassem initr_begin
+Dump of assembler code for function initr_begin:
+   0x5000a594 <+0>:	mov	r3, #2
+   0x5000a598 <+4>:	push	{r0, r1, r2, lr}
+   0x5000a59c <+8>:	str	r3, [sp]
+   0x5000a5a0 <+12>:	ldr	r3, [pc, #32]	; 0x5000a5c8 <initr_begin+52>
+   0x5000a5a4 <+16>:	ldr	r1, [pc, #32]	; 0x5000a5cc <initr_begin+56>
+   0x5000a5a8 <+20>:	ldr	r2, [r3]
+   0x5000a5ac <+24>:	ldr	r3, [pc, #28]	; 0x5000a5d0 <initr_begin+60>
+   0x5000a5b0 <+28>:	ldr	r0, [pc, #28]	; 0x5000a5d4 <initr_begin+64>
+   0x5000a5b4 <+32>:	ldr	r3, [r3]
+   0x5000a5b8 <+36>:	bl	0x50016f88 <printf>
+   0x5000a5bc <+40>:	mov	r0, #0
+   0x5000a5c0 <+44>:	add	sp, sp, #12
+   0x5000a5c4 <+48>:	pop	{pc}		; (ldr pc, [sp], #4)
+   0x5000a5c8 <+52>:	andpl	sp, r2, r4, lsr #23
+   0x5000a5cc <+56>:	andpl	sp, r1, r0, lsr r5
+   0x5000a5d0 <+60>:	andpl	r3, r2, r4, ror #2
+   0x5000a5d4 <+64>:	ldrdpl	r0, [r2], -r11
+End of assembler dump.
+(gdb) x/x 0x5000a5c8
+0x5000a5c8 <initr_begin+52>:	0x5002dba4   -> &uboot_global_var0 in .bss
+(gdb) x/x 0x5000a5cc
+0x5000a5cc <initr_begin+56>:	0x5001d530
+(gdb) x/x 0x5000a5d0
+0x5000a5d0 <initr_begin+60>:	0x50023164   -> &uboot_global_var1 in .data
+(gdb) x/x 0x5000a5d4
+0x5000a5d4 <initr_begin+64>:	0x500205db
+
+gwshan@gwshan:~/sandbox/u$ arm-linux-objdump --headers output/u-boot
+output/u-boot:     file format elf32-littlearm
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         0001bf7c  50000000  50000000  00008000  2**5
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .rodata       000069c4  5001bf7c  5001bf7c  00023f7c  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .hash         0000002c  50022940  50022940  0002a940  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  3 .data         00000c90  5002296c  5002296c  0002a96c  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  4 .got.plt      0000000c  500235fc  500235fc  0002b5fc  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  5 .u_boot_list  000004d0  50023608  50023608  0002b608  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  6 .dynsym       00000060  50028330  50028330  00030330  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  7 .rel.dyn      00004858  50023ad8  50023ad8  0002bad8  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  8 .bss_start    00000000  50023ad8  50023ad8  0003044d  2**0
+                  CONTENTS
+  9 .bss          0000f064  50023ad8  50023ad8  00000000  2**2
+                  ALLOC
+ 10 .bss_end      00000000  50032b3c  50032b3c  0003044d  2**0
+                  CONTENTS
+ 11 .dynstr       0000002a  50028390  50028390  00030390  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+ 12 .dynamic      00000080  500283bc  500283bc  000303bc  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+ 13 .interp       00000011  5002843c  5002843c  0003043c  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+ 14 .ARM.attributes 00000027  00000000  00000000  0003044d  2**0
+                  CONTENTS, READONLY
+ 15 .comment      00000032  00000000  00000000  00030474  2**0
+                  CONTENTS, READONLY
+
+The two functions are called in different uboot bootup stages. initf_end() is
+called before the relocation, while initr_begin() is called after that. Here
+is the result I got. @uboot_global_var0 is changed to 16 in initf_end(), but
+its value is changed back to zero in initr_begin(). It's all because .bss is
+cleared out during relocation, and @uboot_global_var0 is stored in .bss section.
+So we can't access variables stored in .bss section in uboot early booting
+stage (before relocation). It sounds reasonable as uboot usually runs inside
+flash and we can't write anything to flash, thus change variables stored in
+.bss section in this stage. However, it's not true when uboot is loaded and
+booted from RAM. It's something to be improved in my case because I already
+had preliminary patch to support booting uboot from RAM on IBM's openBMC
+platform. 
+
+initf_end: uboot_global_var{0,1,2}=16, 1, 2
+initr_begin: uboot_global_var{0,1,2}=0, 17, 2
+
