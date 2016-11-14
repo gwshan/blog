@@ -1,8 +1,10 @@
 var MenuStrings = new Array(
+    "Kernel->generic->jump label->kernel/generic/jump_label.txt",
     "openBMC->uboot->Palmetto bootup->openbmc/uboot/palmetto_bootup.txt",
     "openBMC->uboot->bss/data/rodata section->openbmc/uboot/bss_data_rodata.txt",
     "openBMC->uboot->Command [ping]->openbmc/uboot/command_ping.txt",
-    "About->Myself->about/myself.html"
+    "About->Myself->about/myself.html",
+    "About->TODO->PCI_VF_MPS_not_configurable->todo/PCI_VF_MPS_not_configurable.txt"
 );
 var RootButton;
 var Iframe;
