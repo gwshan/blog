@@ -2,6 +2,7 @@ var MenuStrings = new Array(
     "Kernel->generic->jump label->kernel/generic/jump_label.txt",
     "Virtualization->KVM->CHAR-KVM_CREATE_VM->virt/CHAR-KVM_CREATE_VM.txt",
     "Virtualization->KVM->VM-KVM_CREATE_VCPU->virt/VM-KVM_CREATE_VCPU.txt",
+    "Virtualization->KVM->VM-KVM_SET_USER_MEMORY_REGION->virt/VM-KVM_SET_USER_MEMORY_REGION.txt",
     "openBMC->uboot->Palmetto bootup->openbmc/uboot/palmetto_bootup.txt",
     "openBMC->uboot->bss/data/rodata section->openbmc/uboot/bss_data_rodata.txt",
     "openBMC->uboot->Command [ping]->openbmc/uboot/command_ping.txt",
