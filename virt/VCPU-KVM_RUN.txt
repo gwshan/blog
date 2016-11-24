@@ -1,0 +1,41 @@
+
+                            =======
+                            KVM_RUN
+                            =======
+
+virt/kvm/kvm_main.c::kvm_vcpu_ioctl
+arch/powerpc/kvm/powerpc.c::kvm_arch_vcpu_ioctl_run
+   * There might be something was just handled by QEMU: (A) MMIO emulation;
+     (B) OSI; (C) HyperCall. We need fetch the result from kvm_run for those
+     cases.
+   arch/powerpc/kvm/book3s.c::kvmppc_vcpu_run
+   arch/powerpc/kvm/book3s_hv.c::kvmppc_vcpu_run_hv
+      * Bail if vcpu->arch.sane is cleared;
+      arch/powerpc/kvm/book3s.c::kvmppc_core_prepare_to_enter
+         * Inject interrupt (exception) if there is pending one in vcpu->arch.pending_exceptions
+      * Bail if current process has pending signal
+      * Setup VRMA if vcpu->kvm->arch.hpte_setup_done is false
+         arch/powerpc/kvm/book3s_hv.c::kvmppc_hv_setup_htab_rma
+            arch/powerpc/kvm/book3s_64_mmu_hv.c::kvmppc_alloc_hpt
+               * Allocate 16MB memory from CMA for HPT. If it fails, try allocating
+                 memory from buddy system. Update couple of fields accordingly:
+                 kvm->arch.hpt_virt  (HPT's virtual address)
+                 kvm->arch.hpt_order (HPT's size shift)
+                 kvm->arch.hpt_npte  (Number of PTEs, each occupies 16 bytes)
+                 kvm->arch.hpt_mask  (Mask of PTE groups, 8 PTEs in one group)
+               * Allocate reverse mapping (1:1 mapping between PTE and reverse one)
+                 kvm->arch.revmap    (Reverse mapping entries)
+                 kvm->arch.sdr1      (VM's SDR1)
+            * Setup VRMA. Its size is 1TB and the VSID is default one (VRMA_VSID).
+              The memory slot whose starting GPA address is zero is checked, to
+              get the page size of the area. kvm->arch.vrma_slb_v is updated.
+            * Update the HPT for VRMA. The last PTE in the group is bolted.
+            * Update kvm->arch.lpcr and vc->lpcr for VRMA
+      arch/powerpc/kernel/process.c::flush_all_to_thread
+         * Save all register for current process
+      * vcpu->arch.state = KVMPPC_VCPU_BUSY_IN_HOST
+        vcpu->arch.wqp = &vcpu->arch.vcore->wq;
+        vcpu->arch.pgdir = current->mm->pgd;
+      arch/powerpc/kvm/book3s_hv.c::kvmppc_run_vcpu
+         * TO BE CONTINUED...
+                 
