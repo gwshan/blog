@@ -1,0 +1,25 @@
+
+                         =============
+                         KVM_CREATE_VM
+                         =============
+
+virt/kvm/kvm_main.c::kvm_dev_ioctl
+virt/kvm/kvm_main.c::kvm_dev_ioctl_create_vm
+   virt/kvm/kvm_main.c::kvm_create_vm
+      * Allocate "struct kvm" instance
+      arch/powerpc/kvm/powerpc.c::kvm_arch_init_vm
+      arch/powerpc/kvm/book3s.c::kvmppc_core_init_vm
+      arch/powerpc/kvm/book3s_hv.c::kvmppc_core_init_vm_hv
+         arch/powerpc/kvm/powerpc.c::kvmppc_alloc_lpid
+            * Allocate LPID
+         arch/powerpc/kvm/book3s_hv.c::kvmppc_alloc_host_rm_ops
+            * Setup "struct kvmppc_host_rm_ops" instance
+         * Save SDR1 to kvm->arch.host_sdr1
+         * Save LPID to kvm->arch.host_lpid
+         * Save LPCR to kvm->arch.host_lpcr
+         * Set kvm->arch.lpcr to guest's LPCR
+         arch/powerpc/kvm/book3s_hv_builtin.c::kvm_hv_vm_activated
+         * Create debugfs file to dump HPT
+   virt/kvm/kvm_main.c::kvm_create_vm_debugfs
+      * Create pre-defined debugfs files
+   * Create device file "kvm-vm"
