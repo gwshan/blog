@@ -12,7 +12,8 @@ arch/powerpc/kvm/powerpc.c::kvm_arch_vcpu_ioctl_run
    arch/powerpc/kvm/book3s_hv.c::kvmppc_vcpu_run_hv
       * Bail if vcpu->arch.sane is cleared;
       arch/powerpc/kvm/book3s.c::kvmppc_core_prepare_to_enter
-         * Inject interrupt (exception) if there is pending one in vcpu->arch.pending_exceptions
+         * Inject interrupt (exception) go guest if there is pending as indicated
+           by vcpu->arch.pending_exceptions
       * Bail if current process has pending signal
       * Setup VRMA if vcpu->kvm->arch.hpte_setup_done is false
          arch/powerpc/kvm/book3s_hv.c::kvmppc_hv_setup_htab_rma
@@ -37,5 +38,4 @@ arch/powerpc/kvm/powerpc.c::kvm_arch_vcpu_ioctl_run
         vcpu->arch.wqp = &vcpu->arch.vcore->wq;
         vcpu->arch.pgdir = current->mm->pgd;
       arch/powerpc/kvm/book3s_hv.c::kvmppc_run_vcpu
-         * TO BE CONTINUED...
-                 
+         *
