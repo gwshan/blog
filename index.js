@@ -1,5 +1,7 @@
 var MenuStrings = new Array(
     "Kernel->generic->jump label->kernel/generic/jump_label.txt",
+    "Kernel->memory management->alloc_pages()->kernel/mm/alloc_pages.txt",
+    "Kernel->networking->OVS data flow->kernel/network/ovs_data_path.txt",
     "Virtualization->KVM->CHAR-KVM_CREATE_VM->virt/CHAR-KVM_CREATE_VM.txt",
     "Virtualization->KVM->VM-KVM_CREATE_VCPU->virt/VM-KVM_CREATE_VCPU.txt",
     "Virtualization->KVM->VM-KVM_SET_USER_MEMORY_REGION->virt/VM-KVM_SET_USER_MEMORY_REGION.txt",
