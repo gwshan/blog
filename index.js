@@ -6,7 +6,12 @@
 var Iframe
 var RootButton
 var MenuStrings = new Array(
-    "About->aabout.html"
+    "Linux->Locks->linux/lock/null.txt",
+    "Linux->Memory Management->linux/mm/null.txt",
+    "Linux->Filesystem->linux/fs/null.txt",
+    "Virtualization->KVM->virt/kvm/null.txt",
+    "Virtualization->QEMU->virt/qemu/null.txt",
+    "Help->About->help/about.html"
 );
 
 var IframeEx = {
