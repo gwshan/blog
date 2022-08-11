@@ -1,20 +1,13 @@
+/*
+ * This script creates an iframe object to show the detailed content.
+ * A tree of button objects are created for navigation. You need append
+ * additional one in 'MenuStrings' to publish new content.
+ */
+var Iframe
+var RootButton
 var MenuStrings = new Array(
-    "Kernel->generic->jump label->kernel/generic/jump_label.txt",
-    "Kernel->memory management->alloc_pages()->kernel/mm/alloc_pages.txt",
-    "Kernel->networking->OVS data flow->kernel/network/ovs_data_path.txt",
-    "Virtualization->KVM->CHAR-KVM_CREATE_VM->virt/CHAR-KVM_CREATE_VM.txt",
-    "Virtualization->KVM->VM-KVM_CREATE_VCPU->virt/VM-KVM_CREATE_VCPU.txt",
-    "Virtualization->KVM->VM-KVM_SET_USER_MEMORY_REGION->virt/VM-KVM_SET_USER_MEMORY_REGION.txt",
-    "Virtualization->KVM->VCPU-KVM_RUN->virt/VCPU-KVM_RUN.txt",
-    "openBMC->uboot->Palmetto bootup->openbmc/uboot/palmetto_bootup.txt",
-    "openBMC->uboot->bss/data/rodata section->openbmc/uboot/bss_data_rodata.txt",
-    "openBMC->uboot->Command [ping]->openbmc/uboot/command_ping.txt",
-    "About->Myself->about/myself.html",
-    "About->TODO->OpenBMC Issues->todo/openbmc_issues.txt",
-    "About->TODO->PCI_VF_MPS_not_configurable->todo/PCI_VF_MPS_not_configurable.txt"
+    "About->aabout.html"
 );
-var RootButton;
-var Iframe;
 
 var IframeEx = {
     createNew:function() {
