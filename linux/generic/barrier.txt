@@ -1,0 +1,60 @@
+
+============
+Source Files
+============
+
+include/asm/barrier.h
+include/asm-generic/barrier.h
+
+
+===========================
+ARM64 Assembly Instructions
+===========================
+
+isb  : Instruction Synchronization Barrier
+dmb  : Data Memory Barrier
+dsb  : Data Synchronization Barrier, stronger than dmb
+dmb  : Data Memory Barrier
+sb   : Speculation Barrier
+csdb : Consumption of Speculative Data Barrier
+ssbb : Speculative Store Bypass Barrier
+pssbb: Physical Speculative Store Bypass Barrier
+
+Options to dsb and dmb
+
+    sy   : Read/Write on full system
+    st   : Write      on full system
+    ld   : Read       on full system
+    ish  : Read/Write on inner shareable domain
+    ishst: Write      on inner shareable domain
+    ishld: Read       on inner shareable domain
+    nsh  : Read/Write on non-shareable domain
+    nshst: Write      on non-shareable domain
+    nshld: Read       on non-shareable domain
+    osh  : Read/Write on outer shareable domain
+    oshst: Write      on outer shreable domain
+    oshld: Read       on outer shareable domain
+
+====
+APIs
+====
+
+Function                Instruction  option
+-----------------------------------------------------------------------
+mb                      dsb          sy
+rmb                     dsb          ld
+wmb                     dsb          st
+dma_mb                  dmb          osh
+dmb_rmb                 dmb          oshld
+dmb_wmb                 dmb          oshst
+smp_mb                  dmb          ish
+smb_rmb                 dmb          ishld
+smb_wmb                 dmb          ishst
+
+smp_store_mb            smb_mb
+smp_sotre_release       stlr         # Store-Release Register
+smp_load_acquire        ldar         # Load-Acquire Register
+smp_cond_load_releaxed  ldar
+smp_cond_load_relaxed   READ_ONCE
+
+

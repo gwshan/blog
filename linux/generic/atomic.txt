@@ -1,0 +1,19 @@
+
+============
+Source Files
+============
+
+arch/arm64/include/asm/atomic_lse.h
+arch/arm64/include/asm/atomic_ll_sc.h
+arch/arm64/include/asm/atomic.h
+arch/arm64/include/asm/barrier.h
+include/linux/atomic/atomic-arch-fallback.h
+include/linux/atomic/atomic-long.h
+include/linux/atomic/atomic-instrumented.h
+include/linux/atomic.h
+
+===
+API
+===
+
+include/linux/atomic/atomic-instrumented.h

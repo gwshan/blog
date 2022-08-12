@@ -6,7 +6,9 @@
 var Iframe
 var RootButton
 var MenuStrings = new Array(
-    "Linux->Locks->linux/lock/null.txt",
+    "Linux->Generic->Barrier->linux/generic/barrier.txt",
+    "Linux->Generic->Atomic->linux/generic/atomic.txt",
+    "Linux->Locks->SpinLock->linux/lock/spinlock.txt",
     "Linux->Memory Management->linux/mm/null.txt",
     "Linux->Filesystem->linux/fs/null.txt",
     "Virtualization->KVM->virt/kvm/null.txt",
