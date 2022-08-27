@@ -1,0 +1,86 @@
+
+                                  ====
+                                  ACPI
+                                  ====
+
+Initialization
+==============
+start_kernel
+  setup_arch
+    acpi_table_upgrade
+    acpi_boot_table_init
+      enable_acpi
+      acpi_table_init
+        acpi_locate_initial_tables
+          acpi_initialize_tables	       # struct acpi_table_desc initial_tables[]
+	    acpi_os_get_root_pointer	       # struct acpi_table_list acpi_gbl_root_table_list
+            acpi_tb_parse_root_table           # RSDP, XSDT or RSDT
+              acpi_tb_install_standard_table
+              acpi_tb_parse_fadt               # FADT, acpi_gbl_FADT
+        acpi_table_init_complete
+    :
+    :
+  acpi_early_init
+    acpi_reallocate_root_table
+    acpi_initialize_subsystem
+      acpi_os_initialize
+      acpi_ut_init_globals
+      acpi_ut_mutex_initialize
+      acpi_ns_root_initialize                 # acpi_gbl_root_node
+      acpi_ut_initialize_interfaces
+    :
+    :
+  acpi_subsystem_init
+    acpi_enable_subsystem
+    regulator_has_full_constraints
+  arch_post_acpi_subsys_init
+    :
+    :
+acpi_init
+  init_prmt                                   # PRM - Platform Runtime Mechanism
+  acpi_init_pcc
+  acpi_bus_init
+    acpi_os_initialize1
+    acpi_load_tables
+    acpi_ec_ecdt_probe
+    acpi_enable_subsystem
+    acpi_initialize_objects
+    acpi_early_processor_osc
+    acpi_bus_osc_negotiate_platform_control
+    acpi_bus_osc_negotiate_usb_control
+    acpi_sysfs_init
+    acpi_early_processor_set_pdc
+    acpi_ec_dsdt_probe
+    acpi_sleep_init
+    acpi_bus_init_irq
+    bus_register(&acpi_bus_type)
+  pci_mmcfg_late_init                        # PCI config space
+  acpi_iort_init
+  acpi_viot_early_init
+  acpi_hest_init
+  acpi_ghes_init
+  acpi_scan_init
+    acpi_pci_root_init                       # "PNP0A03"
+    acpi_pci_link_init                       # "PNP0C0F"
+    acpi_processor_init
+    acpi_platform_init
+    acpi_lpss_init
+    acpi_apd_init
+    acpi_cmos_rtc_init
+    acpi_container_init
+    acpi_memory_hotplug_init
+    acpi_watchdog_init
+    acpi_pnp_init
+    acpi_int340x_thermal_init
+    acpi_amba_init
+    acpi_init_lpit
+    acpi_bus_scan(ACPI_ROOT_OBJECT)
+  acpi_ec_init
+  acpi_debugfs_init
+  acpi_sleep_proc_init
+  acpi_wakeup_device_init
+  acpi_debugger_init
+  acpi_setup_sb_notify_handler
+  acpi_viot_init
+  acpi_agdi_init
+

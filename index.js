@@ -11,6 +11,7 @@ var MenuStrings = new Array(
     "Linux->Locks->SpinLock->linux/lock/spinlock.txt",
     "Linux->Memory Management->linux/mm/null.txt",
     "Linux->Filesystem->linux/fs/null.txt",
+    "Linux->Drivers->ACPI->linux/drivers/acpi.txt",
     "Virtualization->KVM->virt/kvm/null.txt",
     "Virtualization->QEMU->virt/qemu/null.txt",
     "Help->About->help/about.html"
