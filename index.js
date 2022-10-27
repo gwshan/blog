@@ -9,7 +9,7 @@ var MenuStrings = new Array(
     "Linux->Generic->Barrier->linux/generic/barrier.txt",
     "Linux->Generic->Atomic->linux/generic/atomic.txt",
     "Linux->Locks->SpinLock->linux/lock/spinlock.txt",
-    "Linux->Memory Management->linux/mm/null.txt",
+    "Linux->Memory Management->linux/mm/arm64_init.txt",
     "Linux->Filesystem->linux/fs/null.txt",
     "Linux->Drivers->ACPI->linux/drivers/acpi.txt",
     "Virtualization->KVM->virt/kvm/null.txt",

@@ -1,0 +1,42 @@
+
+                      Memory Subsystem Initialization on ARM64
+                      =========================================
+
+Call Trace
+==========
+
+efi_pe_entry
+efi_enter_kernel
+primary_entry
+  preserve_boot_args
+  init_kernel_el
+  create_idmap                          # init_idmap_pg_dir
+  __cpu_setup
+__primary_switch
+  __enabled_mmu				# init_idmap_pg_dir / reserved_pg_dir
+  clear_page_tables
+  create_kernel_mapping			# init_pg_dir
+__primary_switched
+start_kernel  
+  setup_arch
+    early_fixmap_init
+    early_ioremap_init
+    setup_machine_fdt
+    efi_init
+      efi_memmap_init_early		# [1]
+      reserve_regions
+    arm64_memblock_init
+    paging_init				# swapper_pg_dir
+      map_kernel
+      map_mem
+    bootmem_init
+      arch_numa_init
+      dma_pernuma_cma_reserve
+      kvm_hyp_reserve
+      sparse_init
+      zone_sizes_init
+  setup_per_cpu_areas
+  build_all_zonelists
+  page_alloc_init
+    :
+  mm_init
