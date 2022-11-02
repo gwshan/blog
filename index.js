@@ -13,7 +13,7 @@ var MenuStrings = new Array(
     "Linux->Filesystem->linux/fs/null.txt",
     "Linux->Drivers->ACPI->linux/drivers/acpi.txt",
     "Virtualization->KVM->virt/kvm/null.txt",
-    "Virtualization->QEMU->virt/qemu/null.txt",
+    "Virtualization->QEMU->Memory->Dirty-Log->virt/qemu/memory/dirty-log.txt",
     "Help->About->help/about.html"
 );
 
